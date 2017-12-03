@@ -2,7 +2,7 @@ extends base
 
 if request.path.startswith('/category/')
 	if posts.category
-		title = "一亩三分地 - " + posts.category.title
+		title = "涓�浜╀笁鍒嗗湴 - " + posts.category.metadata.ctitle
 	else
 		+response.raise_404()
 
