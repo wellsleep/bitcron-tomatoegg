@@ -1,0 +1,33 @@
+extends base
+
+if request.path.startswith('/category/')
+	if posts.category
+		title = "一亩三分地 - " + posts.category.title
+	else
+		+response.raise_404()
+
+block title
+	title= title
+
+
+block content
+	//+posts.set_min_per_page(20)
+
+	main.content(role='main')
+		article.post.archive
+	        header.post-header
+	            h1.post-title= posts.category.metadata.ctitle
+	        section.post-content
+		        entries = get_data(type='post', path='/' + posts.category.title, limit=20, sort='desc').group('-date:year')
+				for year, year_posts in entries
+					.year
+						span= year
+						year_start_date = '%s-1-1'%year
+						year_end_date = '%s-1-1'%(year.int+1)
+						yearly_count = get_data(type='post', path='/' + posts.category.title, return_count=True, date_start=year_start_date, date_end=year_end_date)
+						span.yearly_count= "(%s)"%yearly_count
+					ul.posts_in_year: for post in year_posts: li
+						span.date= post.date.format("%m/%d")
+						a(href=post.url, title=post.title)= post.title
+
+		+h.paginator()

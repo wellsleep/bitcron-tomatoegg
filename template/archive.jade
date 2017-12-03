@@ -1,0 +1,68 @@
+extends base
+
+block title
+	title= "归档 - " + site.title
+
+block content
+	
+	main.content(role='main')
+	    article.post.archive
+			if request.path.strip('/')=='archive'
+				header.post-header
+					h1.post-title= '嘿，写这么多了啊'
+				section.post-content
+					.archive_list#archive_yearlist
+						oldest_post = d.get_data(types='post', return_one=true, sort='asc') 
+						latest_post = d.get_data(types='post', return_one=true, sort='desc')
+						year_oldest = oldest_post.date.year
+						year_latest = latest_post.date.year
+						
+						//list past year with year_number and yearly_count
+						ul.archive_list_item
+						for year in range(year_latest.int, year_oldest.int-1, -1)
+							
+							year_start_date = '%s-1-1' %year
+							year_end_date = '%s-1-1' %(year.int+1)
+							yearly_count = d.get_data(types='post', return_count=true, date_start=year_start_date, date_end=year_end_date)
+							
+							if yearly_count != 0
+								.pure-u-sm-1-2.pure-u-lg-1-5: .year
+									a(href='/archive/{{year}}')= year
+									span.yearly_count= "（"+yearly_count+"）"
+					
+					//detailed list current year				
+					entries = get_data(type='post',limit=100, sort='desc', date_start='2017-1-1', date_end='2017-12-31').group('-date:year')
+					for year, year_posts in entries
+						.year
+							span= year
+							year_start_date = '%s-1-1'%year
+							year_end_date = '%s-1-1'%(year.int+1)
+							yearly_count = get_data(type='post', return_count=True, date_start=year_start_date, date_end=year_end_date)
+							span.yearly_count= "(%s)"%yearly_count
+						ul.posts_in_year: for post in year_posts: li
+							span.date= post.date.format("%m/%d")
+							a(href=post.url, title=post.title)= post.title
+			
+			else 
+				request_year = request.path.split('/')[-1]
+				
+				header.post-header
+					h1.post-title= '这是 ' + request_year + ' 年干的傻事'
+				section.post-content
+					year_start_date = '%s-1-1'%request_year
+					year_end_date = '%s-1-1'%(request_year.int+1)
+					
+					entries = get_data(type='post',limit=120, sort='desc', date_start=year_start_date, date_end=year_end_date).group('-date:year')
+					for year, year_posts in entries
+						.year
+							span= year
+							year_start_date = '%s-1-1'%year
+							year_end_date = '%s-1-1'%(year.int+1)
+							yearly_count = get_data(type='post', return_count=True, date_start=year_start_date, date_end=year_end_date)
+							span.yearly_count= "(%s)"%yearly_count
+						ul.posts_in_year: for post in year_posts: li
+							span.date= post.date.format("%m/%d")
+							a(href=post.url, title=post.title)= post.title
+				
+
+		+h.paginator()
